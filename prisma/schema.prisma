@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id         Int      @id @default(autoincrement())
+  chat_id    String   @unique
+  phone      String?
+  name       String?
+  first_name String?
+  last_name  String?
+  balance    String   @default("0")
+  cashback   String   @default("0")
+  invite     String   @default("0")
+  referrer   String?
+  role       String   @default("user")
+  date       DateTime @default(now())
+}
+
+model orders {
+  id          Int      @id @default(autoincrement())
+  status      String   @default("driver_search")
+  from        Json?
+  to          Json?
+  order_price String
+  expectation String   @default("0")
+  price       String
+  driver      Json?
+  comment     String?
+  user        Json
+  date        DateTime @default(now())
+}
+
+model city {
+  id         Int     @id @default(autoincrement())
+  latitude   String?
+  longityde  String?
+  region     String?
+  sub_region String?
+  city       String?
+  address    String?
+  places     String?
+  price      String?
+}
+
+model variables {
+  id      Int    @id @default(autoincrement())
+  variabl String @unique
+  meaning String
+}
