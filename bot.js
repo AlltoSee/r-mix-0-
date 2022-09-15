@@ -11,6 +11,14 @@ bot.use(stage.middleware())
 bot.use(require("./commands/start"))
 bot.use(require("./commands/help"))
 
+bot.on("message", ctx => {
+	try {
+		ctx.deleteMessage(ctx.message.message_id)
+	} catch (err) {
+		console.log(err)
+	}
+})
+
 bot.launch()
 
 process.once("SIGINT", () => bot.stop("SIGINT"))
