@@ -14,8 +14,9 @@ scene.enter(async ctx => {
 	}
 })
 
-scene.on("message", ctx => {
+scene.on("text", (ctx, next) => {
 	try {
+		if (ctx.message.text.slice(0, 1) === "/") return next()
 		ctx.deleteMessage(ctx.message.message_id)
 		ctx.deleteMessage(ctx.session.user.message_id)
 		ctx.session.user.name = ctx.message.text
