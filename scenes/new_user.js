@@ -6,7 +6,7 @@ const KEYBOARD = require("../src/keyboards")
 const scene = new Scenes.BaseScene("NEW_USER_SCENE")
 scene.enter(async ctx => {
 	try {
-		const { message_id } = await ctx.replyWithPhoto(
+		const message = await ctx.replyWithPhoto(
 			{ source: "./img/main.jpg" },
 			{
 				caption: TEMPLATE.NEW_USER_MESSAGE,
@@ -14,7 +14,7 @@ scene.enter(async ctx => {
 				parse_mode: "HTML",
 			}
 		)
-		ctx.session.user.message_id = message_id
+		ctx.session.message = message
 	} catch (err) {
 		console.log(err)
 	}
@@ -23,7 +23,8 @@ scene.enter(async ctx => {
 scene.action("registration", async ctx => {
 	try {
 		ctx.answerCbQuery()
-		ctx.deleteMessage(ctx.session.user.message_id)
+		ctx.deleteMessage(ctx.session.message.message_id)
+		ctx.session.registration = {}
 		ctx.scene.enter("NAME_REGISTRATION_SCENE")
 	} catch (err) {
 		console.log(err)
