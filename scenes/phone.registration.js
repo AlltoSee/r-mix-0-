@@ -1,4 +1,5 @@
 const { Scenes } = require("telegraf")
+const db = require("../src/db")
 
 const TEMPLATE = require("../template/ru")
 const KEYBOARD = require("../src/keyboards")

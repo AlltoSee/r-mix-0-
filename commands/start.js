@@ -5,10 +5,12 @@ const command = new Composer()
 command.start(async ctx => {
 	const chat = ctx.message.chat
 
-	ctx.deleteMessage(ctx.message.message_id)
+	ctx.deleteMessage(ctx.message.message_id).catch(err => console.log(err))
 
-	if (ctx.session.user?.message_id) {
-		ctx.deleteMessage(ctx.session.user.message_id)
+	if (ctx.session.message) {
+		ctx
+			.deleteMessage(ctx.session.message.message_id)
+			.catch(err => console.log(err))
 	}
 
 	let user = await findUniqueUser(chat)

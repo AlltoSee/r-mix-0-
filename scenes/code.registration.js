@@ -1,5 +1,6 @@
 const { Scenes } = require("telegraf")
 const axios = require("axios")
+const db = require("../src/db")
 
 const TEMPLATE = require("../template/ru")
 const KEYBOARD = require("../src/keyboards")
@@ -10,8 +11,9 @@ async function getCall(phone) {
 		`https://sms.ru/code/call?phone=${phone}&ip=-1&api_id=${process.env.SMS_API}`
 	)
 }
-function editMessageText(ctx) {
-	ctx.telegram.editMessageText(
+
+async function editMessageText(ctx) {
+	const message = await ctx.telegram.editMessageText(
 		ctx.session.user.chat_id,
 		ctx.session.message.message_id,
 		null,
@@ -21,14 +23,27 @@ function editMessageText(ctx) {
 			parse_mode: "HTML",
 		}
 	)
+	console.log(message)
+	ctx.session.message = message
+}
+
+const promise = (ctx, time) => {
+	return new Promise(res => {
+		let current = 0
+		setTimeout(function go() {
+			if (!ctx.session.promiseTimeout) return
+			if (current >= time) return res()
+			setTimeout(go, 1000)
+			current++
+		}, 1000)
+	})
 }
 //----------!!! Fynction !!!----------//
 
 const scene = new Scenes.BaseScene("CODE_REGISTRATION_SCENE")
 scene.enter(async ctx => {
 	try {
-		const phone = ctx.session.user.phone
-		let text = TEMPLATE.CODE_REGISTRATION_MESSAGE(1, phone)
+		let text = TEMPLATE.CODE_REGISTRATION_MESSAGE(1, ctx.session.user.phone)
 
 		const messageDelete = await ctx.reply("...", {
 			reply_markup: KEYBOARD.REMOVE_KEYBOARD,
@@ -36,8 +51,7 @@ scene.enter(async ctx => {
 
 		await ctx.deleteMessage(messageDelete.message_id)
 
-		const promise = new Promise(res => setTimeout(() => res(), 60000))
-		promise.then(() => {
+		promise(ctx, 60).then(() => {
 			if (!ctx.session.promiseTimeout) return
 			editMessageText(ctx)
 		})
@@ -45,7 +59,8 @@ scene.enter(async ctx => {
 		const result = await getCall(ctx.session.user.phone)
 
 		if (result.data.status === "ERROR") {
-			text = "Ошибка"
+			ctx.session.promiseTimeout = false
+			text = TEMPLATE.MANY_REQUEST
 		}
 
 		const message = await ctx.reply(text, {
@@ -76,32 +91,29 @@ scene.action("edit_number", ctx => {
 
 scene.action("repear_call", async ctx => {
 	try {
-		const phone = ctx.session.user.phone
+		let text = TEMPLATE.CODE_REGISTRATION_MESSAGE(2, ctx.session.user.phone)
 
-		// Проверка на количесто нажатий на "Повторить звонок"
 		if (ctx.session.registration.amount_call >= 1) {
-			const result = await getCall(ctx.session.user.phone)
-			ctx.session.registration.code = result.data.code
-
-			ctx.editMessageText(TEMPLATE.CODE_TIME_REGISTRATION_MESSAGE(phone), {
-				reply_markup: KEYBOARD.EDIT_NUMBER,
-				parse_mode: "HTML",
-			})
-			return
+			text = TEMPLATE.CODE_TIME_REGISTRATION_MESSAGE(ctx.session.user.phone)
+			ctx.session.promiseTimeout = false
 		}
 
-		ctx.editMessageText(TEMPLATE.CODE_REGISTRATION_MESSAGE(2, phone), {
-			reply_markup: KEYBOARD.EDIT_NUMBER,
-			parse_mode: "HTML",
-		})
-
-		const promise = new Promise(res => setTimeout(() => res(), 60000))
-		promise.then(() => {
+		promise(ctx, 120).then(() => {
 			if (!ctx.session.promiseTimeout) return
 			editMessageText(ctx)
 		})
 
 		const result = await getCall(ctx.session.user.phone)
+
+		if (result.data.status === "ERROR") {
+			ctx.session.promiseTimeout = false
+			text = TEMPLATE.MANY_REQUEST
+		}
+
+		ctx.editMessageText(text, {
+			reply_markup: KEYBOARD.EDIT_NUMBER,
+			parse_mode: "HTML",
+		})
 
 		ctx.session.registration.code = result.data.code
 		ctx.session.registration.amount_call++
@@ -110,7 +122,7 @@ scene.action("repear_call", async ctx => {
 	}
 })
 
-scene.on("text", (ctx, next) => {
+scene.on("text", async (ctx, next) => {
 	try {
 		if (ctx.message.text.slice(0, 1) === "/") {
 			ctx.session.promiseTimeout = false
@@ -123,27 +135,23 @@ scene.on("text", (ctx, next) => {
 		if (ctx.message.text != ctx.session.registration.code) {
 			if (ctx.session.flow === false) return
 			ctx.session.flow = false
+
+			let text = TEMPLATE.INCORRECT_CODE
+
 			if (ctx.session.registration.amount_code > 2) {
-				ctx.telegram.editMessageText(
-					ctx.session.user.chat_id,
-					ctx.session.message.message_id,
-					null,
-					"Вы привысили количество попыток",
-					{ parse_mode: "HTML" }
-				)
-				return
+				text = TEMPLATE.CODE_EXCEEDED
+				ctx.session.promiseTimeout = false
 			}
 
 			ctx.telegram.editMessageText(
 				ctx.session.user.chat_id,
 				ctx.session.message.message_id,
 				null,
-				"Не верный код",
+				text,
 				{ parse_mode: "HTML" }
 			)
 
-			const promise = new Promise(res => setTimeout(() => res(), 2000))
-			promise.then(() => {
+			promise(ctx, 1).then(() => {
 				ctx.session.flow = true
 				ctx.telegram.editMessageText(
 					ctx.session.user.chat_id,
@@ -158,6 +166,20 @@ scene.on("text", (ctx, next) => {
 				)
 			})
 
+			ctx.session.registration.amount_code++
+			return
+		}
+
+		const uniquePhone = await db.findUniqueUserPhone(ctx.session.user.phone)
+		if (uniquePhone != null) {
+			ctx.telegram.editMessageText(
+				ctx.session.user.chat_id,
+				ctx.session.message.message_id,
+				null,
+				TEMPLATE.PHONE_IS_LIKEN_TO_ANOTHER,
+				{ parse_mode: "HTML", reply_markup: KEYBOARD.EDIT_NUMBER }
+			)
+			ctx.session.promiseTimeout = false
 			return
 		}
 
@@ -169,15 +191,15 @@ scene.on("text", (ctx, next) => {
 			{ parse_mode: "HTML" }
 		)
 
-		const promise = new Promise(res => setTimeout(() => res(), 2000))
-		promise.then(() => {
+		await db.updateUser(ctx.session.user)
+
+		promise(ctx, 1).then(() => {
 			ctx.deleteMessage(ctx.session.message.message_id)
+			ctx.session.promiseTimeout = false
 			ctx.scene.enter("USER_MAIN_SCENE")
 		})
-
-		console.log("Проверка")
-		ctx.session.promiseTimeout = false
 	} catch (err) {
+		ctx.session.promiseTimeout = false
 		console.log(err)
 	}
 })
