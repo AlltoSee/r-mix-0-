@@ -23,4 +23,12 @@ module.exports = {
 			[{ text: TEMPLATE.REPEAT_CALL, callback_data: "repear_call" }],
 		],
 	},
+	USER_MAIN: {
+		inline_keyboard: [
+			[{ text: TEMPLATE.TAXI_BUTTON, callback_data: "taxi" }],
+			[{ text: TEMPLATE.TARIFFS_BUTTON, callback_data: "tariffs" }],
+			[{ text: TEMPLATE.PERSONAL_AREA_BUTTON, callback_data: "personal_area" }],
+			[{ text: TEMPLATE.SETTINGS_BUTTON, callback_data: "settings" }],
+		],
+	},
 }

@@ -23,7 +23,6 @@ async function editMessageText(ctx) {
 			parse_mode: "HTML",
 		}
 	)
-	console.log(message)
 	ctx.session.message = message
 }
 

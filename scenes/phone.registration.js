@@ -28,6 +28,8 @@ scene.on("contact", ctx => {
 	try {
 		ctx.deleteMessage(ctx.message.message_id)
 		ctx.session.user.phone = ctx.message.contact.phone_number
+			.replace(/[^0-9,.]/g, "")
+			.replace(/^[78]?/, "+7")
 		ctx.deleteMessage(ctx.session.message.message_id)
 		ctx.scene.enter("CODE_REGISTRATION_SCENE")
 	} catch (err) {

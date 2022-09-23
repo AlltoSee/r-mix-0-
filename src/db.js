@@ -33,3 +33,23 @@ exports.updateUser = async user => {
 		},
 	})
 }
+
+exports.findManyCityAddress = async data => {
+	return await prisma.city.findMany({
+		where: {
+			address: {
+				contains: data.slice(3),
+			},
+		},
+	})
+}
+
+exports.findManyCityPlaces = async data => {
+	return await prisma.city.findMany({
+		where: {
+			places: {
+				contains: data.slice(3),
+			},
+		},
+	})
+}
