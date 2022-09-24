@@ -34,6 +34,15 @@ exports.updateUser = async user => {
 	})
 }
 
+exports.updateUserStatus = async (chat, status) => {
+	return await prisma.user.update({
+		where: { chat_id: chat.id.toString() },
+		data: {
+			status: status,
+		},
+	})
+}
+
 exports.findManyCityAddress = async data => {
 	return await prisma.city.findMany({
 		where: {
@@ -51,5 +60,11 @@ exports.findManyCityPlaces = async data => {
 				contains: data.slice(3),
 			},
 		},
+	})
+}
+
+exports.findUniqueCity = async id => {
+	return await prisma.city.findUnique({
+		where: { id: +id },
 	})
 }

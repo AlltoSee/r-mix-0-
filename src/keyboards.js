@@ -31,4 +31,27 @@ module.exports = {
 			[{ text: TEMPLATE.SETTINGS_BUTTON, callback_data: "settings" }],
 		],
 	},
+	ADDRESS_BUTTON: {
+		inline_keyboard: [
+			[
+				{
+					text: TEMPLATE.ADDRESS_BUTTON,
+					switch_inline_query_current_chat: "#a ",
+				},
+			],
+			[
+				{
+					text: TEMPLATE.POPULAR_PLACES_BUTTON,
+					switch_inline_query_current_chat: "#p ",
+				},
+			],
+			[
+				{
+					text: TEMPLATE.MY_ADDRESS,
+					switch_inline_query_current_chat: "#m ",
+				},
+			],
+			[{ text: TEMPLATE.CANCEL_BUTTON, callback_data: "cancel" }],
+		],
+	},
 }

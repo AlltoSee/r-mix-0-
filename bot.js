@@ -7,25 +7,23 @@ const bot = new Telegraf(process.env.BOT_TOKEN)
 const stage = new Scenes.Stage(arrScenes)
 
 const dataConstructor = (current, data) => {
-	const id = data.id
-	const title = data.address
-	const description = data.address
-	const message_text = data.address
+	// let id = data.id
+	// let title = data.address
+	// let description = data.address
+	// let message_text = data.address
 
-	if (current === "#a") {
-		const id = data.id
-		const title = data.address
-		const description = data.description
-		const message_text = "..."
-	}
+	let id = current == "#a" ? data.id : data.id
+	let title = current == "#a" ? data.address : data.address
+	let description = current == "#a" ? data.description : data.address
+	let message_text = "..."
 
 	return {
-		id,
+		id: id,
 		type: "article",
-		title,
-		description,
+		title: title,
+		description: description,
 		input_message_content: {
-			message_text,
+			message_text: message_text,
 		},
 	}
 }
@@ -45,18 +43,27 @@ bot.on("message", ctx => {
 })
 
 bot.on("inline_query", async ctx => {
+	const chat = { id: ctx.inlineQuery.from.id }
 	const data = ctx.inlineQuery.query.toLowerCase()
 	const arr = []
 
+	let text = ""
+
+	const user = await db.findUniqueUser(chat)
+	if (user.status === "from") text = "Откуда?"
+	if (user.status === "to") text = "Куда?"
+
 	if (data.includes("#a")) {
 		if (data.slice(3).length < 1) {
-			arr.push(
-				dataConstructor("#a", {
-					id: 0,
-					address: "Откуда?",
-					description: "Пожалуйста напишите адрес откда вас забрать",
-				})
-			)
+			arr.push({
+				id: 0,
+				type: "article",
+				title: text,
+				description: `Начните писать адрес, а затем выберете подходящий вариант`,
+				input_message_content: {
+					message_text: "...",
+				},
+			})
 		} else {
 			const result = await db.findManyCityAddress(data)
 
@@ -66,7 +73,7 @@ bot.on("inline_query", async ctx => {
 					id: element.id,
 					type: "article",
 					title: element.address,
-					description: `${element.region}, ${element.sub_region}`,
+					description: `${element.sub_region}, ${element.city}`,
 					input_message_content: {
 						message_text: element.id,
 					},
@@ -99,20 +106,16 @@ bot.on("inline_query", async ctx => {
 					type: "article",
 					title: "Нет результатов",
 					input_message_content: {
-						message_text: "Нет результатов",
+						message_text: "...",
 					},
 				},
 			],
-			{
-				cache_time: 0,
-			}
+			{ cache_time: 0 }
 		)
 		return
 	}
 	ctx.answerInlineQuery(arr, {
 		cache_time: 0,
-		switch_pm_text: "Откуда?",
-		switch_pm_parameter: "hi",
 	})
 })
 
