@@ -7,6 +7,7 @@ const KEYBOARD = require("../src/keyboards")
 const scene = new Scenes.BaseScene("FROM_TAXI_SCENE")
 scene.enter(async ctx => {
 	ctx.session.taxi = {}
+	ctx.session.taxi.price = 0
 	const chat = ctx.callbackQuery.message.chat
 	await db.updateUserStatus(chat, "from")
 	ctx.editMessageMedia(

@@ -68,3 +68,48 @@ exports.findUniqueCity = async id => {
 		where: { id: +id },
 	})
 }
+
+exports.createOrder = async (from, stop, to, order_price, comment, user) => {
+	return await prisma.orders.create({
+		data: {
+			status: "driver_search",
+			view: "taxi",
+			from: from,
+			stop: stop,
+			to: to,
+			order_price: `${order_price}`,
+			price: `${order_price}`,
+			comment: comment,
+			user: user,
+		},
+	})
+}
+
+exports.findManyDriver = async () => {
+	return await prisma.drivers.findMany({
+		where: {
+			status: {
+				contains: "online",
+			},
+		},
+	})
+}
+
+exports.findUniqueOrder = async id => {
+	return await prisma.orders.findUnique({
+		where: { id: +id },
+	})
+}
+
+exports.updateOrders = async (id, driver) => {
+	return await prisma.orders.update({
+		where: { id: +id },
+		data: { driver, status: "go" },
+	})
+}
+
+exports.findUniqueDriver = async chat_id => {
+	return await prisma.drivers.findUnique({
+		where: { chat_id },
+	})
+}

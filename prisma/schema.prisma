@@ -23,12 +23,26 @@ model user {
   date       DateTime @default(now())
 }
 
+model drivers {
+  id        Int      @id @default(autoincrement())
+  status    String?
+  latitude  String?
+  longityde String?
+  chat_id   String   @unique
+  phone     String?  @unique
+  rating    String   @default("5.0")
+  name      String?
+  balance   String   @default("0")
+  date      DateTime @default(now())
+}
+
 model orders {
   id          Int      @id @default(autoincrement())
   status      String
   view        String
   basket      Json?
   from        Json?
+  stop        Json?
   to          Json?
   order_price String
   expectation String   @default("0")

@@ -38,4 +38,15 @@ module.exports = {
 	CANCEL_BUTTON: "Отмена ❌",
 	FROM_ADDRESS: "Откуда?",
 	TO_ADDRESS: "Куда?",
+	ORDER_BUTTON: "Заказать",
+	STOP_BUTTON: "Добавить остановку",
+	COMMENT_BUTTON: "Коминтарий водителю",
+	ANOTHER_BUTTON: "Заказать дургому человеку",
+	FROM_TAXI_MESSAGE: from => `<b>Откуда:</b> ${from.city}, ${from.address}`,
+	STOP_TAXI_MESSAGE: stop => `<b>Остановка:</b> ${stop.city}, ${stop.address}`,
+	TO_TAXI_MESSAGE: to => `<b>Куда:</b> ${to.city}, ${to.address}`,
+	PRICE_TAXI_MESSAGE: price => `<b>Цена:</b> ${price} р (предварительно)`,
+	COMMENT_TAXI_MESSAGE: comment => `<b>Коминтарий водителю:</b>\n${comment}`,
+	TAXI_MESSAGE: data =>
+		`<b>Откуда:</b> ${data.from}\n${data.stop}<b>Куда:</b> ${data.to}\n\n<b>Стоймость:</b> ${data.price} р (предворительно)\n<b>Коментарий водителю:</b>\n${data.comment}\n\nЕсли все верно нажмите <b>"Заказать"</b>`,
 }

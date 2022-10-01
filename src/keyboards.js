@@ -54,4 +54,18 @@ module.exports = {
 			[{ text: TEMPLATE.CANCEL_BUTTON, callback_data: "cancel" }],
 		],
 	},
+	MAIN_TAXI_BUTTON: {
+		inline_keyboard: [
+			[{ text: TEMPLATE.ORDER_BUTTON, callback_data: "order" }],
+			[{ text: TEMPLATE.STOP_BUTTON, callback_data: "stop" }],
+			[{ text: TEMPLATE.COMMENT_BUTTON, callback_data: "comment" }],
+			[{ text: TEMPLATE.ANOTHER_BUTTON, callback_data: "another" }],
+			[{ text: TEMPLATE.CANCEL_BUTTON, callback_data: "cancel" }],
+		],
+	},
+	CANCEL_BUTTON: {
+		inline_keyboard: [
+			[{ text: TEMPLATE.CANCEL_BUTTON, callback_data: "cancel" }],
+		],
+	},
 }

@@ -2,6 +2,7 @@ require("dotenv").config()
 const { Telegraf, Scenes, session } = require("telegraf")
 const arrScenes = require("./src/handler_scenes")
 const db = require("./src/db")
+const axios = require("axios")
 
 const bot = new Telegraf(process.env.BOT_TOKEN)
 const stage = new Scenes.Stage(arrScenes)
@@ -42,6 +43,13 @@ bot.on("message", ctx => {
 	}
 })
 
+bot.action(/^\d+$/, async ctx => {
+	console.log(ctx.callbackQuery)
+	const driver = await db.findManyDriver(ctx.callbackQuery.message.chat.id)
+	await db.updateOrders(ctx.callbackQuery.data, driver[0])
+	ctx.editMessageText(`вы взяли заказ ${ctx.callbackQuery.data}`)
+})
+
 bot.on("inline_query", async ctx => {
 	const chat = { id: ctx.inlineQuery.from.id }
 	const data = ctx.inlineQuery.query.toLowerCase()
@@ -50,8 +58,8 @@ bot.on("inline_query", async ctx => {
 	let text = ""
 
 	const user = await db.findUniqueUser(chat)
-	if (user.status === "from") text = "Откуда?"
-	if (user.status === "to") text = "Куда?"
+	if (user.status === "from") text = "Откуда? Введите адрес"
+	if (user.status === "to") text = "Куда? Введите адрес"
 
 	if (data.includes("#a")) {
 		if (data.slice(3).length < 1) {
